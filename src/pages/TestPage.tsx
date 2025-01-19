@@ -64,16 +64,17 @@ const TestPage: React.FC = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-			<div className="max-w-3xl w-full p-6 shadow-md bg-white">
-				<h1 className="text-2xl font-bold text-center mb-6">QR Code Attendance</h1>
+		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6">
+			<div className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl p-4 sm:p-6 shadow-md bg-white rounded-lg">
+				<h1 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">QR Code Attendance</h1>
 
 				<div className="mb-6">
-					<h2 className="text-lg font-semibold mb-2">Scan QR Code</h2>
-					<div className="flex justify-center w-64 h-64">
+					<h2 className="text-base sm:text-lg font-semibold mb-2">Scan QR Code</h2>
+					<div className="flex justify-center w-48 h-48 sm:w-64 sm:h-64 mx-auto">
 						{isReloading ? (
-							<div className="flex flex-col justify-center items-center w-64 h-64 border">
-								<p>Reloading</p> <Loader2 className="w-5 h-5 animate-spin" />
+							<div className="flex flex-col justify-center items-center w-full h-full border">
+								<p className="text-sm sm:text-base">Reloading</p>
+								<Loader2 className="w-5 h-5 animate-spin" />
 							</div>
 						) : (
 							<Scanner
@@ -83,34 +84,36 @@ const TestPage: React.FC = () => {
 							/>
 						)}
 					</div>
-					<p className="text-center text-gray-600 mt-4">{status}</p>
+					<p className="text-center text-sm sm:text-base text-gray-600 mt-4">{status}</p>
 				</div>
 
-				<div className="text-lg font-semibold mb-4">Attendance Logs</div>
-				<table className="table-auto w-full">
-					<thead className="bg-gray-200">
-						<tr>
-							<th className="px-4 py-2">Name</th>
-							<th className="px-4 py-2">Employee ID</th>
-							<th className="px-4 py-2">Time In</th>
-							<th className="px-4 py-2">Time Out</th>
-						</tr>
-					</thead>
-					<tbody>
-						{logs.map((log, index) => (
-							<tr key={index} className="odd:bg-white even:bg-gray-50">
-								<td className="px-4 py-2">{log.name}</td>
-								<td className="px-4 py-2">{log.employeeId}</td>
-								<td className="px-4 py-2">
-									{log.timeIn ? new Date(log.timeIn).toLocaleString() : "-"}
-								</td>
-								<td className="px-4 py-2">
-									{log.timeOut ? new Date(log.timeOut).toLocaleString() : "-"}
-								</td>
+				<div className="text-sm sm:text-lg font-semibold mb-4">Attendance Logs</div>
+				<div className="overflow-x-auto">
+					<table className="table-auto w-full">
+						<thead className="bg-gray-200">
+							<tr>
+								<th className="px-2 sm:px-4 py-2 text-sm sm:text-base">Name</th>
+								<th className="px-2 sm:px-4 py-2 text-sm sm:text-base">Employee ID</th>
+								<th className="px-2 sm:px-4 py-2 text-sm sm:text-base">Time In</th>
+								<th className="px-2 sm:px-4 py-2 text-sm sm:text-base">Time Out</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
+						</thead>
+						<tbody>
+							{logs.map((log, index) => (
+								<tr key={index} className="odd:bg-white even:bg-gray-50">
+									<td className="px-2 sm:px-4 py-2 text-sm sm:text-base">{log.name}</td>
+									<td className="px-2 sm:px-4 py-2 text-sm sm:text-base">{log.employeeId}</td>
+									<td className="px-2 sm:px-4 py-2 text-sm sm:text-base">
+										{log.timeIn ? new Date(log.timeIn).toLocaleString() : "-"}
+									</td>
+									<td className="px-2 sm:px-4 py-2 text-sm sm:text-base">
+										{log.timeOut ? new Date(log.timeOut).toLocaleString() : "-"}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	);
