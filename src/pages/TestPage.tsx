@@ -14,52 +14,90 @@ const TestPage: React.FC = () => {
 	const [status, setStatus] = useState<string>("");
 	const [isReloading, setIsReloading] = useState<boolean>(false);
 
-	const handleScan = (barcodes: IDetectedBarcode[]) => {
+	const logAttendance = async (name: string, employeeId: string, timeIn: string | null, timeOut: string | null) => {
+		try {
+			const response = await fetch("http://localhost:3000/logAttendance", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					name,
+					employeeId,
+					timeIn,
+					timeOut
+				})
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error("Error logging to Google Sheets:", error.message);
+				setStatus(`Failed to log attendance: ${error.message}`);
+			}
+		} catch (error) {
+			console.error("Error logging to Google Sheets:", error);
+			setStatus("Failed to connect to the server.");
+		}
+	};
+
+	const handleScan = async (barcodes: IDetectedBarcode[]) => {
 		if (barcodes.length > 0) {
 			try {
-				// Trigger reloading for 1 second
+				// Trigger reloading animation
 				setIsReloading(true);
-				setTimeout(() => {
-					setIsReloading(false);
-				}, 1000);
+				setTimeout(() => setIsReloading(false), 1000);
 
-				// Parse QR code data as JSON
+				// Parse QR code data
 				const parsedData = JSON.parse(barcodes[0].rawValue);
 				const name = parsedData.Name || "Unknown";
 				const employeeId = parsedData["Employee ID"] || "Unknown";
 				const now = new Date().toISOString();
 
+				// Update logs
 				setLogs(prevLogs => {
 					const existingLogIndex = prevLogs.findIndex(
 						log => log.employeeId === employeeId && log.timeOut === null
 					);
 
 					if (existingLogIndex >= 0) {
-						// Update the existing log with Time Out
+						// Employee checks out
 						const updatedLogs = [...prevLogs];
 						updatedLogs[existingLogIndex].timeOut = now;
 						setStatus(
 							`Employee ${name} (ID: ${employeeId}) checked out at ${new Date(now).toLocaleTimeString()}`
 						);
+
+						// Log to Google Sheets
+						logAttendance(name, employeeId, null, now);
+
 						return updatedLogs;
 					} else {
-						// Create a new log entry for Time In
-						const newLog: Log = { name, employeeId, timeIn: now, timeOut: null };
+						// Employee checks in
+						const newLog: Log = {
+							name,
+							employeeId,
+							timeIn: now,
+							timeOut: null
+						};
 						setStatus(
 							`Employee ${name} (ID: ${employeeId}) checked in at ${new Date(now).toLocaleTimeString()}`
 						);
+
+						// Log to Google Sheets
+						logAttendance(name, employeeId, now, null);
+
 						return [...prevLogs, newLog];
 					}
 				});
 			} catch (error) {
-				setStatus("Invalid QR code format. Please scan a valid JSON QR code.");
 				console.error("QR Parsing Error:", error);
+				setStatus("Invalid QR code format. Please scan a valid JSON QR code.");
 			}
 		}
 	};
 
 	const handleError = (error: unknown) => {
-		console.error("QR Reader Error: ", error);
+		console.error("QR Reader Error:", error);
 		setStatus("Error scanning QR code. Please try again.");
 	};
 
@@ -77,11 +115,7 @@ const TestPage: React.FC = () => {
 								<Loader2 className="w-5 h-5 animate-spin" />
 							</div>
 						) : (
-							<Scanner
-								onScan={barcodes => handleScan(barcodes)}
-								onError={error => handleError(error)}
-								allowMultiple
-							/>
+							<Scanner onScan={barcodes => handleScan(barcodes)} onError={handleError} allowMultiple />
 						)}
 					</div>
 					<p className="text-center text-sm sm:text-base text-gray-600 mt-4">{status}</p>
